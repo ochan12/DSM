@@ -1,4 +1,0 @@
-Clave: a91bf7aa6ee8d1d2ea9e00ca761f80fe
-
-Secret: 493aef9a7ba95ee8
-;
