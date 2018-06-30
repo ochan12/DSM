@@ -1,0 +1,1 @@
+Esta aplicación fue desarrollada y probada a través del entorno Expo en dispositivos Android.
