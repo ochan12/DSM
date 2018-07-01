@@ -11,7 +11,6 @@ import { Actions, ActionConst } from 'react-native-router-flux';
 import Button from './Button.js';
 import Card from './Card.js';
 import CardSection from './CardSection.js';
-import BiggerButton from './BiggerButton.js';
 import * as User from './User.js';
 import axios from 'axios';
 
@@ -32,8 +31,13 @@ class SettingsMenu extends Component {
             validate: "Find",
             current: "Current",
             new: "New",
+            last: "Old",
             notFound: "Not Found",
-            searching: "Searching"
+            searching: "Searching",
+            foundAlert: "User found",
+            notFoundAlert: "User not found, try another one!",
+            sameUser: "This is already the current user!",
+            settingsTitle: "Settings"
         },
         sp: {
             settingsTitle: "Ajustes",
@@ -50,25 +54,33 @@ class SettingsMenu extends Component {
             validate: "Buscar",
             current: "Actual",
             new: "Nuevo",
+            last: "Anterior",
             notFound: "No Encontrado",
-            searching: "Buscando"
+            searching: "Buscando",
+            foundAlert: "Usuario encontrado",
+            notFoundAlert: "Usuario no encontrado, prueba otro!",
+            sameUser: "¡Este ya es el usuario actual!",
+            settingsTitle: "Configuración"
         }
     })
     languageFlag = STRINGS.getLanguage() == 'en' ? EnglishFlag : SpanishFlag
     orderIcon = PhotosOrdering.getPhotosOrdering() == 'chrono' ? ChronoIcon : AlphaIcon
     orderName = PhotosOrdering.getPhotosOrdering() == 'chrono' ? STRINGS.orderNameChrono : STRINGS.orderNameAlpha
-    state = { language: STRINGS.getLanguage(), order: PhotosOrdering.getPhotosOrdering(), username: '', id: '', activity: 'standby', text: 'John', message: ''}
+    state = { language: STRINGS.getLanguage(), order: PhotosOrdering.getPhotosOrdering(), username: '', id: '', text: User.getUser(), userChanged: false }
 
     componentWillMount() {
         this.settingsStrings.setLanguage(STRINGS.getLanguage());
+    }
+
+    componentWillUnmount() {
+        this.acceptChanges();
     }
 
     changeLanguage(lang) {
         this.settingsStrings.setLanguage(lang);
         this.languageFlag = (lang == 'en' ? EnglishFlag : SpanishFlag);
         this.setState({ language: lang });
-        var aux = STRINGS.settingsTitle;
-        Actions.refresh({ title: aux });
+        Actions.refresh({ title: this.settingsStrings.settingsTitle });
     }
 
     changeOrder(ord) {
@@ -78,17 +90,24 @@ class SettingsMenu extends Component {
     }
 
     changeUser() {
-        this.setState({ username: '', id: '', activity: 'searching', message: this.settingsStrings.searching });
-        axios.get(`https://api.flickr.com/services/rest/?method=flickr.people.findByUsername&api_key=6e8a597cb502b7b95dbd46a46e25db8d&username=${this.state.text}&format=json&nojsoncallback=1`)
-            .then((response => this.setState({ username: response.data.user.username._content, id: response.data.user.id, activity: 'found', message: '' }))).catch(() => this.setState({ activity: 'notfound', message: this.settingsStrings.notFound }));
+        if (this.state.text != User.getUser()) {
+            axios.get(`https://api.flickr.com/services/rest/?method=flickr.people.findByUsername&api_key=6e8a597cb502b7b95dbd46a46e25db8d&username=${this.state.text}&format=json&nojsoncallback=1`)
+            .then((response => {this.setState({ username: response.data.user.username._content, id: response.data.user.id, userChanged: true }); 
+                alert(this.settingsStrings.foundAlert + ':\n' + this.state.username + '\n(ID: ' + this.state.id + ')')}))
+            .catch(() => alert(this.settingsStrings.notFoundAlert));
+        } else {
+            alert(this.settingsStrings.sameUser);
+        }
     }
 
     acceptChanges() {
         STRINGS.setLanguage(this.state.language);
         PhotosOrdering.setPhotosOrdering(this.state.order);
-        User.setUser(this.state.username);
-        User.setUserId(encodeURIComponent(this.state.id));
-        Actions.albumList({ type: ActionConst.RESET });
+        if (this.state.userChanged) {
+            User.setUser(this.state.username);
+            User.setUserId(encodeURIComponent(this.state.id));
+        }
+        Actions.albumList({ type: ActionConst.RESET, title: STRINGS.albumsTitle });
     }
 
     render() {
@@ -100,27 +119,30 @@ class SettingsMenu extends Component {
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}> {this.settingsStrings.user} </Text>
                         </CardSection>
                         <CardSection>
-                            <View>
-                                <TextInput placeholder={this.settingsStrings.user} autoCapitalize={'none'} onChangeText={(text) => this.setState({text})}/>
-                            </View>
+                            <TextInput defaultValue={User.getUser()} underlineColorAndroid='transparent' autoCapitalize={'none'} onChangeText={(text) => this.setState({text})} style={{ marginLeft: 5, marginRight: 5 }}/>
                         </CardSection>
                         <CardSection>
                             <Button onPress={() => this.changeUser()}> {this.settingsStrings.changeAction} </Button>
                         </CardSection>
+                        {this.state.userChanged ? 
+                            <CardSection>
+                                <Text>{this.settingsStrings.last}: {User.getUser()} (ID: {decodeURIComponent(User.getUserId())})</Text>
+                            </CardSection> : 
                         <CardSection>
-                            <Text> {this.settingsStrings.current}: {User.getUser()} (ID: {decodeURIComponent(User.getUserId())}) </Text>
-                        </CardSection>
-                        <CardSection>
-                            {this.state.activity == 'found' ? <Text> {this.settingsStrings.new}: {this.state.username} (ID: {this.state.id}) </Text> : <Text> {this.settingsStrings.new}: {this.state.message} </Text> }
-                        </CardSection>
+                            <Text>{this.settingsStrings.current}: {User.getUser()} (ID: {decodeURIComponent(User.getUserId())}) </Text>
+                        </CardSection> }
+                        {this.state.userChanged ? 
+                            <CardSection>
+                                <Text>{this.settingsStrings.new}: {this.state.username} (ID: {this.state.id})</Text>
+                            </CardSection> : null }
                     </Card>
                     <Card>
                         <CardSection>
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}> {this.settingsStrings.langLabel} </Text>
                         </CardSection>
                         <CardSection>
-                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <Image source={this.languageFlag} style={{ width: 80, height: 80 }} />
+                            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                <Image source={this.languageFlag} style={{ width: 60, height: 60 }} />
                                 <Text style={{ fontSize: 18 }}> {this.settingsStrings.langName} </Text>
                             </View>
                         </CardSection>
@@ -133,23 +155,13 @@ class SettingsMenu extends Component {
                             <Text style={{ fontSize: 18, fontWeight: 'bold' }}> {this.settingsStrings.orderLabel} </Text>
                         </CardSection>
                         <CardSection>
-                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <Image source={this.orderIcon} style={{ width: 80, height: 80 }} />
+                            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                                <Image source={this.orderIcon} style={{ width: 60, height: 60 }} />
                                 <Text style={{ fontSize: 18 }}> {this.state.order == 'chrono' ? this.settingsStrings.orderNameChrono : this.settingsStrings.orderNameAlpha} </Text>
                             </View>
                         </CardSection>
                         <CardSection>
                             <Button onPress={() => this.state.order == 'chrono' ? this.changeOrder('alpha') : this.changeOrder('chrono')}> {this.settingsStrings.changeAction} </Button>
-                        </CardSection>
-                    </Card>
-                    <Card>
-                        <CardSection>
-                            <Text> {this.settingsStrings.acceptInst} </Text>
-                        </CardSection>
-                        <CardSection>
-                            <BiggerButton style={{}} onPress={() => this.acceptChanges()}>
-                                {this.settingsStrings.accept}
-                            </BiggerButton>
                         </CardSection>
                     </Card>
                 </ScrollView>

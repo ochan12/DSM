@@ -17,13 +17,14 @@ export let STRINGS = new LocalizedStrings({
     seeComments: "See Comments",
     loading: "Loading...",
     noResults: "No Results",
+    noResultsHelp: "Try another user in settings!",
     accept: "Accept"
   },
   sp: {
     albumsTitle: "Álbumes",
     photosTitle: "Fotos",
     commentsTitle: "Comentarios",
-    settingsTitle: "Ajustes",
+    settingsTitle: "Configuración",
     langLabel: "Lenguaje",
     langName: "Español",
     changeAction: "Cambiar",
@@ -35,6 +36,7 @@ export let STRINGS = new LocalizedStrings({
     seeComments: "Ver Comentarios",
     loading: "Cargando...",
     noResults: "Sin Resultados",
+    noResultsHelp: "¡Prueba otro usuario en configuración!",
     accept: "Aceptar"
   }
 })

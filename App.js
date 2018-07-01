@@ -11,15 +11,15 @@ import { STRINGS } from './src/components/Localization';
 const App = () => (
   <Router>
     <Scene key="root">
-      <Scene key="albumList" component={AlbumList} initial={true} onEnter={() => Actions.refresh({title: STRINGS.albumsTitle})} renderRightButton={() => SettingsButton}/>
+      <Scene key="albumList" component={AlbumList} initial={true} title={STRINGS.albumsTitle} renderRightButton={() => SettingsButton}/>
       <Scene key="photoList" component={PhotoList} onEnter={() => Actions.refresh({title: STRINGS.photosTitle})} renderRightButton={() => SettingsButton}/>
       <Scene key="commentList" component={CommentList} onEnter={() => Actions.refresh({title: STRINGS.commentsTitle})} renderRightButton={() => SettingsButton}/>
-      <Scene key="settingsMenu" component={SettingsMenu} onEnter={() => Actions.refresh({title: STRINGS.settingsTitle})} renderBackButton={() => {}} onBack={() => Actions.pop()}/>
+      <Scene key="settingsMenu" component={SettingsMenu} title={STRINGS.settingsTitle} renderBackButton={() => {}} onBack={() => Actions.pop()}/>
     </Scene>
   </Router>
 );
 
-const SettingsButton = <TouchableOpacity onPress={() => Actions.settingsMenu({STRINGS})}>
+const SettingsButton = <TouchableOpacity onPress={() => Actions.settingsMenu()}>
   <Image source={require('./src/icons/settings-cog.png')} style={{ width: 30, height: 30, marginRight: 10 }} />
 </TouchableOpacity>;
 

@@ -17,7 +17,7 @@ class PhotoList extends Component {
   reorderChrono() {
     this.state.photos.sort(function (a, b) {
       var nameA = a.dateupload, nameB = b.dateupload;
-      if (nameA < nameB) //sort string ascending
+      if (nameA < nameB) //sort date ascending
         return -1;
       if (nameA > nameB)
         return 1;
@@ -40,7 +40,7 @@ class PhotoList extends Component {
     if (!this.state.done) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0062DD' }}>
-          <Text>
+          <Text style={{ fontSize: 30, color: 'white'}}>
             {STRINGS.loading}
 					</Text>
         </View>
@@ -49,7 +49,7 @@ class PhotoList extends Component {
     if (this.state.done && !this.state.photos) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0062DD' }}>
-          <Text>
+          <Text style={{ fontSize: 30, color: 'white' }}>
             {STRINGS.noResults}
 					</Text>
         </View>
