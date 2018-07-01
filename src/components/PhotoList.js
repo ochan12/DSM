@@ -4,12 +4,13 @@ import axios from 'axios';
 import PhotoDetail from './PhotoDetail';
 import { STRINGS } from './Localization';
 import * as PhotosOrdering from './PhotosOrdering.js';
+import * as User from './User.js';
 
 class PhotoList extends Component {
   state = { photos: null, done: false };
 
   componentWillMount() {
-    axios.get(`https://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos&api_key=6e8a597cb502b7b95dbd46a46e25db8d&photoset_id=${this.props.albumId}&user_id=31012926%40N03&enable_extras=on&extras=date_upload&format=json&nojsoncallback=1`)
+    axios.get(`https://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos&api_key=6e8a597cb502b7b95dbd46a46e25db8d&photoset_id=${this.props.albumId}&user_id=${User.getUserId()}&enable_extras=on&extras=date_upload&format=json&nojsoncallback=1`)
       .then(response => this.setState({ photos: response.data.photoset.photo, done: true }));
   }
 
